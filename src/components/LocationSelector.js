@@ -31,8 +31,10 @@ const LocationSelector = () => {
   const { setLocation } = useWeatherStore();
   return (
     <select onChange={(e) => setLocation(e.target.value || null)}>
-      {locationMap.map((locationMap) => (
-        <option value={locationMap}>{locationMap}</option>
+      {locationMap.map((location) => (
+        <option key={location} value={location}>
+          {location}
+        </option>
       ))}
     </select>
   );
