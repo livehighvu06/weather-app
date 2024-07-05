@@ -12,13 +12,17 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="App">
-        <h1>天氣預報應用</h1>
-        <LocationSelector />
-        <DateTimePicker />
-        <ForecastTypeSelector />
-        <WeatherTypeSelector />
-        <SortingOptions />
+      <div className="max-w-7xl mt-4 mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 className="text-3xl font-semibold text-gray-900 mb-6">
+          天氣預報應用
+        </h1>
+        <div class="grid p-2 gap-4 md:grid-cols-6">
+          <LocationSelector />
+          <DateTimePicker />
+          <ForecastTypeSelector />
+          <WeatherTypeSelector />
+          <SortingOptions />
+        </div>
         <WeatherDisplay />
       </div>
     </QueryClientProvider>

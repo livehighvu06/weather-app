@@ -30,9 +30,16 @@ const locationMap = [
 const LocationSelector = () => {
   const { setLocation } = useWeatherStore();
   return (
-    <select onChange={(e) => setLocation(e.target.value || null)}>
+    <select
+      className="border border-gray-300 rounded px-3 py-2 text-sm h-10"
+      onChange={(e) => setLocation(e.target.value || null)}
+    >
       {locationMap.map((location) => (
-        <option key={location} value={location === "全部縣市" ? "" : location}>
+        <option
+          key={location}
+          value={location === "全部縣市" ? "" : location}
+          className="text-sm"
+        >
           {location}
         </option>
       ))}

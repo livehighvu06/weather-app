@@ -61,11 +61,13 @@ const findTimeData = (inputTime, timeData) => {
 
   return closestTimePeriod;
 };
+
 const WeatherDisplay = () => {
-  const { location, forecastType, dateTime } = useWeatherStore();
+  const { location, forecastType, dateTime, weatherType } = useWeatherStore();
   const { data, isLoading, error } = useWeatherQuery(location, forecastType);
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading)
+    return <div className="text-3xl font-bold text-gray-900">Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
 
   const matchingData = {};
@@ -102,6 +104,7 @@ const WeatherDisplay = () => {
       });
     });
   }
+
   // 氣象資訊描述
   const weatherStatus = {
     Wx: "天氣現象",
@@ -113,6 +116,7 @@ const WeatherDisplay = () => {
     MaxT: "最高溫",
     CI: "舒適程度",
   };
+
   // 調整排序
   const sortedCities = Object.keys(matchingData)
     .sort((a, b) => cityOrder.indexOf(a) - cityOrder.indexOf(b))
@@ -120,15 +124,20 @@ const WeatherDisplay = () => {
       obj[key] = matchingData[key];
       return obj;
     }, {});
+
   return (
     <div>
       {forecastType === "36hours" && (
-        <div>
-          <h1>三十六小時天氣預報</h1>
+        <div className="mt-6">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+            三十六小時天氣預報
+          </h2>
           {Object.keys(sortedCities).map((locationName, index) => (
-            <div key={index}>
-              <h2>{locationName}</h2>
-              <p>
+            <div key={index} className="mb-6 pb-6 border-b-2">
+              <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                {locationName}
+              </h2>
+              <p className="text-sm text-gray-600">
                 {sortedCities[locationName][0].startTime} -{" "}
                 {sortedCities[locationName][0].endTime}
               </p>
@@ -139,10 +148,14 @@ const WeatherDisplay = () => {
                     elementName === "PoP" ||
                     elementName === "MinT" ||
                     elementName === "MaxT") && (
-                    <div key={elemIndex}>
-                      <p>
-                        <strong>{weatherStatus[elementName]}</strong>:{" "}
+                    <div key={elemIndex} className="mt-2">
+                      <p className="text-sm text-gray-700">
+                        <strong className="font-medium">
+                          {weatherStatus[elementName]}:
+                        </strong>{" "}
                         {data.parameter.parameterName}
+                        {(elementName === "MinT" || elementName === "MaxT") &&
+                          "˚C"}
                       </p>
                     </div>
                   )
@@ -154,23 +167,29 @@ const WeatherDisplay = () => {
       )}
 
       {forecastType === "2days" && (
-        <div>
-          <h1>未來兩天天氣預報</h1>
+        <div className="mt-6">
+          <h1 className="text-3xl  font-semibold text-gray-900 mb-6">
+            未來兩天天氣預報
+          </h1>
           {Object.keys(sortedCities).map((locationName, index) => (
-            <div key={index}>
-              <h2>{locationName}</h2>
-              <p>
+            <div key={index} className="mb-6 pb-6 border-b-2">
+              <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                {locationName}
+              </h2>
+              <p className="text-sm text-gray-600">
                 {sortedCities[locationName][0].startTime} -{" "}
                 {sortedCities[locationName][0].endTime}
               </p>
               {sortedCities[locationName].map((data, elemIndex) => {
                 const { elementName, elementValue } = data;
                 return (
-                  <div key={elemIndex}>
+                  <div key={elemIndex} className="mt-2">
                     {(elementName === "WeatherDescription" ||
                       elementName === "PoP6h") && (
-                      <p>
-                        <strong>{weatherStatus[elementName]}</strong>:{" "}
+                      <p className="text-sm text-gray-700">
+                        <strong className="font-medium">
+                          {weatherStatus[elementName]}:
+                        </strong>{" "}
                         {elementName === "PoP6h"
                           ? `${elementValue[0].value}˚C`
                           : elementValue[0].value}
@@ -185,26 +204,32 @@ const WeatherDisplay = () => {
       )}
 
       {forecastType === "1week" && (
-        <div>
-          <h1>未來一週天氣預報</h1>
+        <div className="mt-6">
+          <h1 className="text-3xl font-semibold text-gray-900 mb-6">
+            未來一週天氣預報
+          </h1>
           {Object.keys(sortedCities).map((locationName, index) => (
-            <div key={index}>
-              <h2>{locationName}</h2>
-              <p>
+            <div key={index} className="mb-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                {locationName}
+              </h2>
+              <p className="text-sm text-gray-600">
                 {sortedCities[locationName][0].startTime} -{" "}
                 {sortedCities[locationName][0].endTime}
               </p>
               {sortedCities[locationName].map((data, elemIndex) => {
                 const { elementName, elementValue } = data;
                 return (
-                  <div key={elemIndex}>
+                  <div key={elemIndex} className="mt-2">
                     {(elementName === "WeatherDescription" ||
                       elementName === "PoP6h") && (
-                      <p>
-                        <strong>{weatherStatus[elementName]}</strong>:{" "}
+                      <p className="text-sm text-gray-700">
+                        <strong className="font-medium">
+                          {weatherStatus[elementName]}:
+                        </strong>{" "}
                         {elementName === "PoP6h"
                           ? `${elementValue[0].value}˚C`
-                          : elementValue[0].value}
+                          : elementValue[0].value}{" "}
                       </p>
                     )}
                   </div>
