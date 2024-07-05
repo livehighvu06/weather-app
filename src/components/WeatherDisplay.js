@@ -57,13 +57,26 @@ const findTimeData = (inputTime, timeData) => {
         closestTimePeriod = timePeriod;
       }
     }
+    if (timePeriod.dataTime) {
+      const startDate = parseDateString(timePeriod.dataTime);
+
+      // 計算與目標時間的差距
+      const difference = Math.abs(inputDate - startDate);
+
+      // 找出最接近的時間段
+      if (difference < closestDifference) {
+        closestDifference = difference;
+        closestTimePeriod = timePeriod;
+      }
+    }
   }
 
   return closestTimePeriod;
 };
 
 const WeatherDisplay = () => {
-  const { location, forecastType, dateTime, weatherType } = useWeatherStore();
+  const { location, forecastType, dateTime, weatherType, sortBy } =
+    useWeatherStore();
   const { data, isLoading, error } = useWeatherQuery(location, forecastType);
 
   if (isLoading)
@@ -115,16 +128,83 @@ const WeatherDisplay = () => {
     MinT: "最低溫",
     MaxT: "最高溫",
     CI: "舒適程度",
+    T: "溫度",
   };
 
   // 調整排序
-  const sortedCities = Object.keys(matchingData)
-    .sort((a, b) => cityOrder.indexOf(a) - cityOrder.indexOf(b))
-    .reduce((obj, key) => {
-      obj[key] = matchingData[key];
+  const sortCitiesByCriteria = (
+    matchingData,
+    cityOrder,
+    sortBy,
+    forecastType
+  ) => {
+    // 照大小排序 由高至低
+    // 溫度、降雨機率
+    const sortByTemperature = sortBy === "temperature";
+    const sortByPoP = sortBy === "pop";
+
+    // Helper function to extract the maximum temperature for a city
+    const getMaxTemperature = (cityData, forecastType) => {
+      if (forecastType === "36hours") {
+        return parseInt(cityData[4].parameter.parameterName, 10);
+      } else {
+        return parseInt(cityData[3].elementValue[0].value, 10);
+      }
+    };
+
+    let sortedCities;
+
+    if (forecastType === "36hours") {
+      sortedCities = cityOrder
+        .filter((city) => city in matchingData)
+        .sort((a, b) => {
+          if (sortByTemperature) {
+            return (
+              getMaxTemperature(matchingData[b], forecastType) -
+              getMaxTemperature(matchingData[a], forecastType)
+            );
+          }
+          if (sortByPoP) {
+            return (
+              parseInt(matchingData[b][1].parameter.parameterName, 10) -
+              parseInt(matchingData[a][1].parameter.parameterName, 10)
+            );
+          }
+          return cityOrder.indexOf(a) - cityOrder.indexOf(b);
+        });
+    } else {
+      sortedCities = Object.keys(matchingData).sort((a, b) => {
+        if (sortByTemperature) {
+          return (
+            getMaxTemperature(matchingData[b], forecastType) -
+            getMaxTemperature(matchingData[a], forecastType)
+          );
+        }
+        if (sortByPoP) {
+          return (
+            parseInt(matchingData[b][0].elementValue[0].value, 10) -
+            parseInt(matchingData[a][0].elementValue[0].value, 10)
+          );
+        }
+        return 0; // 不做額外排序
+      });
+    }
+
+    // 將排序後的城市資料轉為物件
+    const sortedMatchingData = sortedCities.reduce((obj, city) => {
+      obj[city] = matchingData[city];
       return obj;
     }, {});
 
+    return sortedMatchingData;
+  };
+  const sortedCities = sortCitiesByCriteria(
+    matchingData,
+    cityOrder,
+    sortBy,
+    forecastType
+  );
+  console.log(sortedCities);
   return (
     <div>
       {forecastType === "36hours" && (
@@ -132,37 +212,40 @@ const WeatherDisplay = () => {
           <h2 className="text-2xl font-semibold text-gray-900 mb-6">
             三十六小時天氣預報
           </h2>
-          {Object.keys(sortedCities).map((locationName, index) => (
-            <div key={index} className="mb-6 pb-6 border-b-2">
-              <h2 className="text-xl font-semibold text-gray-800 mb-2">
-                {locationName}
-              </h2>
-              <p className="text-sm text-gray-600">
-                {sortedCities[locationName][0].startTime} -{" "}
-                {sortedCities[locationName][0].endTime}
-              </p>
-              {matchingData[locationName].map((data, elemIndex) => {
-                const { elementName } = data;
-                return (
-                  (elementName === "Wx" ||
-                    elementName === "PoP" ||
-                    elementName === "MinT" ||
-                    elementName === "MaxT") && (
-                    <div key={elemIndex} className="mt-2">
-                      <p className="text-sm text-gray-700">
-                        <strong className="font-medium">
-                          {weatherStatus[elementName]}:
-                        </strong>{" "}
-                        {data.parameter.parameterName}
-                        {(elementName === "MinT" || elementName === "MaxT") &&
-                          "˚C"}
-                      </p>
-                    </div>
-                  )
-                );
-              })}
-            </div>
-          ))}
+          {Object.keys(sortedCities).map((locationName, index) => {
+            return (
+              <div key={index} className="mb-6 pb-6 border-b-2">
+                <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                  {locationName}
+                </h2>
+                <p className="text-sm text-gray-600">
+                  {sortedCities[locationName][0].startTime} -{" "}
+                  {sortedCities[locationName][0].endTime}
+                </p>
+                {matchingData[locationName].map((data, elemIndex) => {
+                  const { elementName } = data;
+                  return (
+                    (elementName === "Wx" ||
+                      elementName === "PoP" ||
+                      elementName === "MinT" ||
+                      elementName === "MaxT") && (
+                      <div key={elemIndex} className="mt-2">
+                        <p className="text-sm text-gray-700">
+                          <strong className="font-medium">
+                            {weatherStatus[elementName]}:
+                          </strong>{" "}
+                          {data.parameter.parameterName}
+                          {(elementName === "MinT" || elementName === "MaxT") &&
+                            "˚C"}
+                          {elementName === "PoP" && "%"}
+                        </p>
+                      </div>
+                    )
+                  );
+                })}
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -185,14 +268,15 @@ const WeatherDisplay = () => {
                 return (
                   <div key={elemIndex} className="mt-2">
                     {(elementName === "WeatherDescription" ||
-                      elementName === "PoP6h") && (
+                      elementName === "PoP6h" ||
+                      elementName === "T") && (
                       <p className="text-sm text-gray-700">
                         <strong className="font-medium">
                           {weatherStatus[elementName]}:
                         </strong>{" "}
-                        {elementName === "PoP6h"
-                          ? `${elementValue[0].value}˚C`
-                          : elementValue[0].value}
+                        {elementValue[0].value}
+                        {(elementName === "PoP6h" && "%") ||
+                          (elementName === "T" && "˚C")}
                       </p>
                     )}
                   </div>
@@ -209,7 +293,7 @@ const WeatherDisplay = () => {
             未來一週天氣預報
           </h1>
           {Object.keys(sortedCities).map((locationName, index) => (
-            <div key={index} className="mb-6">
+            <div key={index} className="mb-6 pb-6 border-b-2">
               <h2 className="text-xl font-semibold text-gray-800 mb-2">
                 {locationName}
               </h2>
@@ -222,14 +306,15 @@ const WeatherDisplay = () => {
                 return (
                   <div key={elemIndex} className="mt-2">
                     {(elementName === "WeatherDescription" ||
-                      elementName === "PoP6h") && (
+                      elementName === "PoP6h" ||
+                      elementName === "T") && (
                       <p className="text-sm text-gray-700">
                         <strong className="font-medium">
                           {weatherStatus[elementName]}:
                         </strong>{" "}
-                        {elementName === "PoP6h"
-                          ? `${elementValue[0].value}˚C`
-                          : elementValue[0].value}{" "}
+                        {elementValue[0].value}
+                        {(elementName === "PoP6h" && "%") ||
+                          (elementName === "T" && "˚C")}
                       </p>
                     )}
                   </div>
