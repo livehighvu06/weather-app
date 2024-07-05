@@ -11,7 +11,7 @@ const SortingOptions = () => {
     >
       <option value="none">不排序</option>
       <option value="temperature">溫度</option>
-      <option value="weatherType">天氣類型</option>
+      <option value="pop">降雨機率</option>
     </select>
   );
 };
