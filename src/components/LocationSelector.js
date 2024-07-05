@@ -32,7 +32,7 @@ const LocationSelector = () => {
   return (
     <select onChange={(e) => setLocation(e.target.value || null)}>
       {locationMap.map((location) => (
-        <option key={location} value={location}>
+        <option key={location} value={location === "全部縣市" ? "" : location}>
           {location}
         </option>
       ))}
