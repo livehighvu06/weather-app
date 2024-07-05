@@ -31,18 +31,36 @@ const cityOrder = [
 // 篩選符合時間的資料
 const findTimeData = (inputTime, timeData) => {
   const inputDate = new Date(inputTime);
+
+  // 解析日期字串成為 Date 物件，假設日期格式為 "YYYY-MM-DD HH:mm:ss"
+  const parseDateString = (dateString) => {
+    const [datePart, timePart] = dateString.split(" ");
+    const [year, month, day] = datePart.split("-").map(Number);
+    const [hour, minute, second] = timePart.split(":").map(Number);
+    return new Date(year, month - 1, day, hour, minute, second);
+  };
+
+  let closestTimePeriod = null;
+  let closestDifference = Infinity;
+
+  // 遍歷時間資料，尋找最接近的時間段
   for (const timePeriod of timeData) {
-    if (timePeriod.startTime && timePeriod?.endTime) {
-      const startDate = new Date(timePeriod?.startTime.replace(" ", "T"));
-      const endDate = new Date(timePeriod?.endTime.replace(" ", "T"));
-      if (inputDate >= startDate && inputDate < endDate) {
-        return timePeriod;
+    if (timePeriod.startTime && timePeriod.endTime) {
+      const startDate = parseDateString(timePeriod.startTime);
+
+      // 計算與目標時間的差距
+      const difference = Math.abs(inputDate - startDate);
+
+      // 找出最接近的時間段
+      if (difference < closestDifference) {
+        closestDifference = difference;
+        closestTimePeriod = timePeriod;
       }
     }
   }
-  return null;
-};
 
+  return closestTimePeriod;
+};
 const WeatherDisplay = () => {
   const { location, forecastType, dateTime } = useWeatherStore();
   const { data, isLoading, error } = useWeatherQuery(location, forecastType);
