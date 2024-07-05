@@ -16,7 +16,7 @@ function App() {
         <h1 className="text-3xl font-semibold text-gray-900 mb-6">
           天氣預報應用
         </h1>
-        <div class="grid p-2 gap-4 md:grid-cols-6">
+        <div className="grid p-2 gap-4 md:grid-cols-6">
           <LocationSelector />
           <DateTimePicker />
           <ForecastTypeSelector />
