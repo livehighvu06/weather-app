@@ -12,8 +12,8 @@ const WeatherTypeSelector = () => {
     { value: "6", label: "陰時多雲" },
     { value: "7", label: "陰天" },
     { value: "8", label: "多雲陣雨" },
-    { value: "9", label: "多雲短暫雨" },
-    { value: "10", label: "多雲短暫陣雨" },
+    { value: "8", label: "多雲短暫雨" },
+    { value: "8", label: "多雲短暫陣雨" },
     { value: "11", label: "雨天" },
   ];
   return (
