@@ -153,7 +153,6 @@ const WeatherDisplay = () => {
     };
 
     let sortedCities;
-
     if (forecastType === "36hours") {
       sortedCities = cityOrder
         .filter((city) => city in matchingData)
@@ -182,8 +181,10 @@ const WeatherDisplay = () => {
           return cityOrder.indexOf(a) - cityOrder.indexOf(b);
         });
     } else {
-      sortedCities = cityOrder
-        .filter((city) => city in matchingData)
+      const selectedMatchingData = location
+        ? Object.keys(matchingData)
+        : cityOrder.filter((city) => city in matchingData);
+      sortedCities = selectedMatchingData
         .filter((location) => {
           // 當 weatherType 不等於 'all' 時進行篩選
           if (sortByWeatherType) {
@@ -213,13 +214,11 @@ const WeatherDisplay = () => {
           return 0; // 不做額外排序
         });
     }
-
     // 將排序後的城市資料轉為物件
     const sortedMatchingData = sortedCities.reduce((obj, city) => {
       obj[city] = matchingData[city];
       return obj;
     }, {});
-
     return sortedMatchingData;
   };
   const sortedCities = sortCitiesByCriteria(
