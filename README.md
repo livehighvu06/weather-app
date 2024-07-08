@@ -24,3 +24,8 @@
 
 應用程式使用台灣中央氣象局提供的 API 來獲取天氣資料。API 的詳細說明和文件可以在以下連結找到：
 [台灣中央氣象局 API 文件](https://opendata.cwa.gov.tw/dist/opendata-swagger.html)
+
+## 規格書
+
+本應用程式依照台灣中央氣象局的天氣資料規格書進行開發，詳細規格可以參考以下連結：
+[台灣中央氣象局天氣資料規格書](https://opendata.cwa.gov.tw/opendatadoc/MFC/A0012-001.pdf)
