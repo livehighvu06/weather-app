@@ -24,7 +24,7 @@ const WeatherTypeSelector = () => {
     >
       <option value="all">所有天氣</option>
       {weatherTypes.map((type) => (
-        <option key={type.value} value={type.value}>
+        <option key={type.id} value={type.value}>
           {type.label}
         </option>
       ))}
