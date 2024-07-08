@@ -117,7 +117,6 @@ const WeatherDisplay = () => {
       });
     });
   }
-
   // 氣象資訊描述
   const weatherStatus = {
     Wx: "天氣現象",
@@ -142,6 +141,7 @@ const WeatherDisplay = () => {
     // 溫度、降雨機率
     const sortByTemperature = sortBy === "temperature";
     const sortByPoP = sortBy === "pop";
+    const sortByWeatherType = weatherType !== "all";
 
     // Helper function to extract the maximum temperature for a city
     const getMaxTemperature = (cityData, forecastType) => {
@@ -157,6 +157,15 @@ const WeatherDisplay = () => {
     if (forecastType === "36hours") {
       sortedCities = cityOrder
         .filter((city) => city in matchingData)
+        .filter((location) => {
+          // 當 weatherType 不等於 'all' 時進行篩選
+          if (sortByWeatherType) {
+            return (
+              matchingData[location][0].parameter.parameterValue === weatherType
+            );
+          }
+          return true;
+        })
         .sort((a, b) => {
           if (sortByTemperature) {
             return (
@@ -173,21 +182,36 @@ const WeatherDisplay = () => {
           return cityOrder.indexOf(a) - cityOrder.indexOf(b);
         });
     } else {
-      sortedCities = Object.keys(matchingData).sort((a, b) => {
-        if (sortByTemperature) {
-          return (
-            getMaxTemperature(matchingData[b], forecastType) -
-            getMaxTemperature(matchingData[a], forecastType)
-          );
-        }
-        if (sortByPoP) {
-          return (
-            parseInt(matchingData[b][0].elementValue[0].value, 10) -
-            parseInt(matchingData[a][0].elementValue[0].value, 10)
-          );
-        }
-        return 0; // 不做額外排序
-      });
+      sortedCities = cityOrder
+        .filter((city) => city in matchingData)
+        .filter((location) => {
+          // 當 weatherType 不等於 'all' 時進行篩選
+          if (sortByWeatherType) {
+            const wx = matchingData[location].find(
+              (el) => el.elementName === "Wx"
+            );
+            return (
+              parseInt(wx.elementValue[1].value, 10) ===
+              parseInt(weatherType, 10)
+            );
+          }
+          return true;
+        })
+        .sort((a, b) => {
+          if (sortByTemperature) {
+            return (
+              getMaxTemperature(matchingData[b], forecastType) -
+              getMaxTemperature(matchingData[a], forecastType)
+            );
+          }
+          if (sortByPoP) {
+            return (
+              parseInt(matchingData[b][0].elementValue[0].value, 10) -
+              parseInt(matchingData[a][0].elementValue[0].value, 10)
+            );
+          }
+          return 0; // 不做額外排序
+        });
     }
 
     // 將排序後的城市資料轉為物件
@@ -204,11 +228,15 @@ const WeatherDisplay = () => {
     sortBy,
     forecastType
   );
-  console.log(sortedCities);
+  if (!Object.keys(sortedCities).length) {
+    return (
+      <div className="mt-6 text-2xl font-bold text-gray-900">沒有符合資料</div>
+    );
+  }
   return (
-    <div>
+    <div className="mt-6">
       {forecastType === "36hours" && (
-        <div className="mt-6">
+        <div>
           <h2 className="text-2xl font-semibold text-gray-900 mb-6">
             三十六小時天氣預報
           </h2>
@@ -250,7 +278,7 @@ const WeatherDisplay = () => {
       )}
 
       {forecastType === "2days" && (
-        <div className="mt-6">
+        <div>
           <h1 className="text-3xl  font-semibold text-gray-900 mb-6">
             未來兩天天氣預報
           </h1>
@@ -288,7 +316,7 @@ const WeatherDisplay = () => {
       )}
 
       {forecastType === "1week" && (
-        <div className="mt-6">
+        <div>
           <h1 className="text-3xl font-semibold text-gray-900 mb-6">
             未來一週天氣預報
           </h1>
